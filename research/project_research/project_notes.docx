@@ -1,0 +1,15 @@
+1. Problem Overview
+Illegal and unregulated fishing is a major issue affecting marine biodiversity along the Chennai coast. Many fishermen unintentionally catch protected species due to lack of awareness about conservation status, breeding seasons, and local fishing regulations. Additionally, there is no accessible platform where the public can report illegal fishing activities. This lack of awareness and reporting tools contributes to biodiversity loss and weak enforcement.
+
+2. Why Illegal Fishing Happens
+Illegal fishing often occurs due to limited awareness among fishermen about protected species and breeding season restrictions. Small-scale fishermen may not always have access to clear information about fishing laws. Misidentification of fish species is also common. In many cases, illegal fishing is accidental rather than intentional.
+
+3. Existing Applications
+Several applications exist that help identify fish species or assist fishermen. Examples include FishVerify, Fishbrain, and Marlin@CMFRI. These apps provide species recognition and fishing guidance. However, they mainly focus on fishing assistance rather than conservation compliance or public reporting of violations.
+
+4. Gap in Current Solutions
+Existing platforms do not combine species awareness, IUCN conservation data, breeding-season regulations, and a community reporting system in a single platform. There is also no hyper-local solution designed specifically for Chennai’s coastal ecosystem. This creates a gap in compliance awareness and transparency.
+
+5. Proposed Solution
+To address this gap, we propose BlueSentinel, a community-driven marine compliance platform. The system will allow users to check fish species information, view conservation status and breeding season restrictions, and report illegal fishing activities through a simple mobile interface. This platform aims to improve awareness, encourage responsible fishing, and support marine biodiversity protection.
+

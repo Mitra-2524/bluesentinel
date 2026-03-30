@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>BlueSentinel Monitoring</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+body{margin:0;font-family:Arial;}
+
+nav{
+background:#0a3d62;
+padding:10px;
+}
+
+nav a{
+color:white;
+margin:15px;
+text-decoration:none;
+}
+
+#map{
+height:90vh;
+width:100%;
+}
+
+.dashboard{
+position:absolute;
+right:20px;
+top:80px;
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+z-index:1000;
+}
+
+.control-panel{
+position:absolute;
+left:20px;
+top:80px;
+background:white;
+padding:15px;
+width:220px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+z-index:1000;
+}
+</style>
+
+</head>
+
+<body>
+
+<nav>
+<a href="../frontend/index.html">Home</a>
+<a href="../frontend/report.html">Report Fishing</a>
+<a href="map.html">Monitoring Map</a>
+</nav>
+
+<div class="control-panel">
+<h3>Control Center</h3>
+<p>Active Vessels: 2</p>
+<p>Suspicious Vessels: 1</p>
+<p>VS102 Risk: 82%</p>
+<p>VS204 Risk: 35%</p>
+
+<button onclick="loadReports()">🔄 Refresh Reports</button>
+</div>
+
+<div class="dashboard">
+<h3>BlueSentinel</h3>
+<p>High Risk Alerts: Live</p>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+<script>
+
+window.onload = function(){
+
+// =======================
+// MAP SETUP
+// =======================
+var map = L.map('map').setView([10.5,78.5],6);
+
+var satellite = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+).addTo(map);
+
+var street = L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+);
+
+L.control.layers({
+"Satellite": satellite,
+"Street": street
+}).addTo(map);
+
+// =======================
+// STATIC DATA
+// =======================
+var shipIcon = L.icon({
+iconUrl:"https://cdn-icons-png.flaticon.com/512/3711/3711105.png",
+iconSize:[35,35]
+});
+
+L.marker([8.1,77.5],{icon:shipIcon}).addTo(map).bindPopup("Vessel VS102");
+L.marker([8.3,77.7],{icon:shipIcon}).addTo(map).bindPopup("Vessel VS204");
+
+L.heatLayer([
+[8.1,77.5,0.9],
+[8.2,77.6,0.8],
+[8.3,77.7,0.7]
+],{radius:25}).addTo(map);
+
+// =======================
+// MOVING SHIP
+// =======================
+var ship = L.marker([8.05,77.45],{icon:shipIcon}).addTo(map);
+
+var route=[
+[8.05,77.45],
+[8.08,77.48],
+[8.1,77.5],
+[8.15,77.6]
+];
+
+var i=0;
+setInterval(()=>{
+ship.setLatLng(route[i]);
+i=(i+1)%route.length;
+},1000);
+
+// =======================
+// REPORT SYSTEM
+// =======================
+var reportMarkers=[];
+var lastReportId=null;
+
+function loadReports(){
+
+fetch("http://127.0.0.1:8000/reports?nocache=" + new Date().getTime())
+.then(res=>res.json())
+.then(data=>{
+
+let reports = data.reports || data;
+
+// CLEAR OLD
+reportMarkers.forEach(m=>map.removeLayer(m));
+reportMarkers=[];
+
+// ADD MARKERS
+reports.forEach(report=>{
+
+    let lat = parseFloat(report.latitude);
+    let lng = parseFloat(report.longitude);
+
+    if(isNaN(lat) || isNaN(lng)) return;
+
+    var marker = L.marker([lat, lng])
+    .addTo(map)
+    .bindPopup(
+        "<b>🐟 Species:</b> " + report.species +
+        "<br><b>📝 Description:</b> " + report.description
+    );
+
+    reportMarkers.push(marker);
+
+});
+
+// 🔴 RED MARK FOR LATEST REPORT (ONLY IF NEW)
+if(reports.length > 0){
+
+    var latest = reports[reports.length - 1];
+
+    let lat = parseFloat(latest.latitude);
+    let lng = parseFloat(latest.longitude);
+
+    if(!isNaN(lat) && !isNaN(lng)){
+
+        // ✅ CHECK IF NEW REPORT
+        if(lastReportId !== latest.id){
+
+            // 🚨 ALERT
+            alert("🚨 New Fishing Report Detected!");
+
+            // 🔴 RED MARK
+            L.circleMarker([lat, lng], {
+                color:'red',
+                radius:20,
+                fillOpacity:0.6
+            }).addTo(map);
+
+            map.setView([lat, lng], 8);
+
+            // SAVE LAST ID
+            lastReportId = latest.id;
+        }
+    }
+}
+}); // ✅ FIXED CLOSING
+
+} // ✅ FUNCTION CLOSED
+
+// INITIAL LOAD
+loadReports();
+setInterval(loadReports, 3000);
+
+// BUTTON
+window.loadReports = loadReports;
+
+}; // ✅ window.onload CLOSED
+
+</script>
+
+</body>
+</html>

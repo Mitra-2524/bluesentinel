@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Report Illegal Fishing</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f8fb;
+margin:0;
+}
+
+header{
+background:#0a3d62;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+nav{
+background:#1e6fa8;
+padding:10px;
+text-align:center;
+}
+
+nav a{
+color:white;
+margin:15px;
+text-decoration:none;
+}
+
+.container{
+width:40%;
+margin:40px auto;
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 0 10px #ccc;
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin:10px 0;
+}
+
+button{
+background:#0a3d62;
+color:white;
+padding:12px;
+border:none;
+border-radius:5px;
+width:100%;
+margin-top:10px;
+cursor:pointer;
+}
+
+#locationStatus{
+color:green;
+font-weight:bold;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>Report Illegal Fishing</h1>
+</header>
+
+<nav>
+<a href="index.html">Home</a>
+<a href="report.html">Report Fishing</a>
+<a href="../dashboard/map.html">Monitoring Map</a>
+</nav>
+
+<div class="container">
+
+<h3>Submit Report</h3>
+
+<form id="reportForm">
+
+<label>Fish Species</label>
+<input id="species" required>
+
+<label>Description</label>
+<textarea id="description" required></textarea>
+
+<label>Latitude</label>
+<input id="latitude" placeholder="Enter or use GPS" required>
+
+<label>Longitude</label>
+<input id="longitude" placeholder="Enter or use GPS" required>
+
+<label>Photo (optional)</label>
+<input type="file" id="photo">
+
+<button type="button" onclick="getLocation()">📍 Use My Location</button>
+
+<p id="locationStatus"></p>
+
+<button type="submit">🚀 Submit Report</button>
+
+</form>
+
+</div>
+
+<script>
+
+// =======================
+// 📍 GET GPS LOCATION
+// =======================
+function getLocation(){
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(function(pos){
+            document.getElementById("latitude").value = pos.coords.latitude;
+            document.getElementById("longitude").value = pos.coords.longitude;
+            document.getElementById("locationStatus").innerText = "✅ Location captured";
+        }, function(){
+            alert("❌ Unable to get location");
+        });
+    } else {
+        alert("❌ Geolocation not supported");
+    }
+}
+
+// =======================
+// 🚀 SUBMIT REPORT
+// =======================
+document.getElementById("reportForm").addEventListener("submit", function(e){
+
+e.preventDefault();
+
+// GET VALUES
+const species = document.getElementById("species").value.trim();
+const latitude = parseFloat(document.getElementById("latitude").value);
+const longitude = parseFloat(document.getElementById("longitude").value);
+const description = document.getElementById("description").value.trim();
+
+// ✅ VALIDATION (IMPORTANT)
+if(!species || isNaN(latitude) || isNaN(longitude) || !description){
+    alert("❌ Please enter valid data");
+    return;
+}
+
+// DATA
+const data = {
+    species: species,
+    latitude: latitude,
+    longitude: longitude,
+    description: description
+};
+
+// DEBUG (optional)
+console.log("Sending:", data);
+
+// SEND
+fetch("http://127.0.0.1:8000/reports", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+})
+.then(res => {
+    if(!res.ok){
+        throw new Error("Server error");
+    }
+    return res.json();
+})
+.then(res => {
+
+    alert("✅ Report Submitted Successfully!");
+
+    // clear form
+    document.getElementById("reportForm").reset();
+    document.getElementById("locationStatus").innerText = "";
+
+    // redirect
+    window.location.href = "../dashboard/map.html";
+
+})
+.catch(err => {
+    console.error(err);
+    alert("❌ ERROR: " + err.message);
+});
+
+});
+
+</script>
+
+</body>
+</html>

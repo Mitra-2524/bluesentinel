@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>BlueSentinel</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#f4f8fb;
+}
+
+header{
+background:#0a3d62;
+color:white;
+padding:25px;
+text-align:center;
+}
+
+nav{
+background:#1e6fa8;
+padding:12px;
+text-align:center;
+}
+
+nav a{
+color:white;
+margin:15px;
+text-decoration:none;
+font-weight:bold;
+}
+
+.hero{
+text-align:center;
+padding:60px;
+}
+
+.btn{
+background:#0a3d62;
+color:white;
+padding:12px 25px;
+border-radius:6px;
+text-decoration:none;
+margin:10px;
+display:inline-block;
+}
+
+.checker{
+background:white;
+width:40%;
+margin:auto;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px #ccc;
+}
+
+input{
+padding:10px;
+width:70%;
+}
+
+button{
+padding:10px;
+background:#0a3d62;
+color:white;
+border:none;
+border-radius:5px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>BlueSentinel</h1>
+<p>AI System for Illegal Fishing Monitoring</p>
+</header>
+
+<nav>
+<a href="index.html">Home</a>
+<a href="report.html">Report Fishing</a>
+<a href="../dashboard/map.html">Monitoring Map</a>
+</nav>
+
+<div class="hero">
+
+<h2>Protecting Oceans from Illegal Fishing</h2>
+
+<a class="btn" href="report.html">Report Illegal Fishing</a>
+
+<a class="btn" href="../dashboard/map.html">View Monitoring Map</a>
+
+</div>
+
+<div class="checker">
+
+<h3>Fish Legality Checker</h3>
+
+<input id="fishInput" placeholder="Enter fish species">
+
+<button onclick="checkFish()">Check</button>
+
+<p id="result"></p>
+
+</div>
+
+<script>
+
+function checkFish(){
+
+var fish = document.getElementById("fishInput").value;
+
+fetch("http://127.0.0.1:8000/species/check/" + fish)
+
+.then(response => response.json())
+
+.then(data => {
+
+if(data.message){
+document.getElementById("result").innerText = data.message;
+return;
+}
+
+document.getElementById("result").innerHTML =
+"Scientific Name: " + data.scientific_name +
+"<br>IUCN Status: " + data.iucn_status +
+"<br>Legal Status: " + data.legal_status +
+"<br>" + data.warning;
+
+})
+
+.catch(error => {
+document.getElementById("result").innerText = "Error checking species";
+});
+
+}
+
+</script>
+</body>
+</html>
